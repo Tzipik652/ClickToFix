@@ -44,7 +44,7 @@ public class Customer {
     @Column
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "service_request")
+    @OneToMany(mappedBy = "request")
     private List<Customer> customers;
 
 }

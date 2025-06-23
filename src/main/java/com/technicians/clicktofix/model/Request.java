@@ -16,7 +16,7 @@ import lombok.Data;
 @Entity
 @Table
 @Data
-public class ServiceRequest  {
+public class Request  {
 
     @Id
     @GeneratedValue
