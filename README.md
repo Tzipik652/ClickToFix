@@ -27,6 +27,6 @@ It includes functionality for:
 - The system sends an automated email to the customer with:
   - Technician’s name
   - Estimated arrival time
-  - Contact details (if applicable)
+  - Contact details
 
 > 🔄 _Optional enhancement_: In future versions
