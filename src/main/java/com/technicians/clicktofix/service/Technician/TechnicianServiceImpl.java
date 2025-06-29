@@ -42,7 +42,11 @@ public class TechnicianServiceImpl implements TechnicianService{
 
     @Override
     public Technician getById(int technician_id) {
-        return technicianRep.findById(technician_id).get();
+        try{
+            return technicianRep.findById(technician_id).get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

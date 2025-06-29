@@ -7,8 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.technicians.clicktofix.dto.RequestDto;
 import com.technicians.clicktofix.model.Customer;
 import com.technicians.clicktofix.service.Customer.CustomerService;
+import com.technicians.clicktofix.service.Request.RequestService;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +29,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class CustomerController {
     @Autowired
     private CustomerService cs;
+    @Autowired
+    private RequestService rs;
 
     @PostMapping
     public ResponseEntity<?> addCustomer(@RequestBody Customer customer) {
@@ -85,6 +90,22 @@ public class CustomerController {
         Customer tech = cs.getById(id);
         if (tech == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+        }
+        return ResponseEntity.ok(tech);
+    }
+    @GetMapping("{id}/requests")
+    public ResponseEntity<?> getRequestsByCustomerId(@PathVariable int id) {
+        List<RequestDto> tech = rs.getRequestsByCustomerId(id);
+        if (tech.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Request not found");
+        }
+        return ResponseEntity.ok(tech);
+    }
+    @GetMapping("{id}/requests/descriptions")
+    public ResponseEntity<?> getAllDescriptionRequestsByCustomerID(@PathVariable int id) {
+        List<String> tech = rs.getAllDescriptionRequestsByCustomerID(id);
+        if (tech.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Request not found");
         }
         return ResponseEntity.ok(tech);
     }

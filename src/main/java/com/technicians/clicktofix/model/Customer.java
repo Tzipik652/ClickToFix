@@ -3,13 +3,17 @@ package com.technicians.clicktofix.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.data.annotation.Id;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -19,10 +23,10 @@ import lombok.Data;
 public class Customer {
     
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-     @Column
+    @Column
     private String name;
 
     @Column
@@ -44,7 +48,12 @@ public class Customer {
     @Column
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "request")
-    private List<Customer> customers;
-
+    @JsonIgnore
+    @OneToMany(mappedBy = "customerRef", cascade = CascadeType.ALL) 
+    private List<Request> requests;
+    
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

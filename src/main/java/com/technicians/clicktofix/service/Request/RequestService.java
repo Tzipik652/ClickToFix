@@ -2,14 +2,18 @@ package com.technicians.clicktofix.service.Request;
 
 import java.util.List;
 
-import com.technicians.clicktofix.model.Request;
+import com.technicians.clicktofix.dto.RequestDto;
 
 public interface RequestService {
-    void add(Request sr);
-    void update(Request sr);
+    void add(RequestDto sr);
+    void update(RequestDto sr);
     void delete(int service_request_id);
-    List<Request> getAll();
-    Request getById(int service_request_id);
+    List<RequestDto> getAll();
+    RequestDto getById(int service_request_id);
     boolean existsById(int service_request_id);
-    
+    List<String> getAllDescriptionRequestsByTechnicianID(int technician_id);
+    List<String> getAllDescriptionRequestsByCustomerID(int customer_id);
+    List<RequestDto> getRequestsByTechnicianId(int technician_id);
+    List<RequestDto> getRequestsByCustomerId(int customerId);
+
 }

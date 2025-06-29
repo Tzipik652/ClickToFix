@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.technicians.clicktofix.model.Request;
+import com.technicians.clicktofix.dto.RequestDto;
 import com.technicians.clicktofix.service.Request.RequestService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +28,7 @@ public class RequestController {
     private RequestService rs;
 
     @PostMapping
-    public ResponseEntity<?> addRequest(@RequestBody Request request) {
+    public ResponseEntity<?> addRequest(@RequestBody RequestDto request) {
         try {
             rs.add(request);
             return ResponseEntity.status(HttpStatus.CREATED).body("Request created successfully");
@@ -39,7 +39,7 @@ public class RequestController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateRequest(@PathVariable int id, @RequestBody Request Request) {
+    public ResponseEntity<?> updateRequest(@PathVariable int id, @RequestBody RequestDto Request) {
         if (!rs.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Request not found");
         }
@@ -72,7 +72,7 @@ public class RequestController {
     @GetMapping
     public ResponseEntity<?> getAllRequests() {
         try {
-            List<Request> list = rs.getAll();
+            List<RequestDto> list = rs.getAll();
             return ResponseEntity.ok(list);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -82,10 +82,12 @@ public class RequestController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getRequestById(@PathVariable int id) {
-        Request tech = rs.getById(id);
+        RequestDto tech = rs.getById(id);
         if (tech == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Request not found");
         }
         return ResponseEntity.ok(tech);
     }
+   
+
 }

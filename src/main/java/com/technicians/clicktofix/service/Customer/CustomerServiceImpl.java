@@ -41,7 +41,11 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer getById(int customer_id) {
-        return customerRep.findById(customer_id).get();
+        try{
+            return customerRep.findById(customer_id).get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
