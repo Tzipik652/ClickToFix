@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.technicians.clicktofix.dto.LoginRequest;
 import com.technicians.clicktofix.dto.RequestDto;
 import com.technicians.clicktofix.model.Customer;
 import com.technicians.clicktofix.service.Customer.CustomerService;
@@ -32,14 +33,41 @@ public class CustomerController {
     @Autowired
     private RequestService rs;
 
-    @PostMapping
-    public ResponseEntity<?> addCustomer(@RequestBody Customer customer) {
+    // @PostMapping
+    // public ResponseEntity<?> addCustomer(@RequestBody Customer customer) {
+    //     try {
+    //         cs.add(customer);
+    //         return ResponseEntity.status(HttpStatus.CREATED).body("Customer created successfully");
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                 .body("Failed to create customer: " + e.getMessage());
+    //     }
+    // }
+    @PostMapping("/register")
+    public ResponseEntity<?> registerCustomer(@RequestBody Customer customer) {
         try {
+            if (cs.existsByEmail(customer.getEmail())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already in use");
+            }
             cs.add(customer);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Customer created successfully");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Customer registered successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to create customer: " + e.getMessage());
+                    .body("Failed to register customer: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginCustomer(@RequestBody LoginRequest loginRequest) {
+        try {
+            Customer customer = cs.findByEmail(loginRequest.getEmail());
+            if (customer == null || !customer.getPasswordHash().equals(loginRequest.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+            }
+            return ResponseEntity.ok(customer); // אפשר גם להחזיר טוקן JWT במקום פרטי לקוח
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to login: " + e.getMessage());
         }
     }
 

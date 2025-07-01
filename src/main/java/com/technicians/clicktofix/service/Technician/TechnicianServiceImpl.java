@@ -53,5 +53,19 @@ public class TechnicianServiceImpl implements TechnicianService{
     public boolean existsById(int id) {
        return technicianRep.existsById(id);
     }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return technicianRep.existsByEmail(email);
+    }
+
+    @Override
+    public Technician findByEmail(String email) {
+        try{
+            return technicianRep.findByEmail(email).get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
     
 }

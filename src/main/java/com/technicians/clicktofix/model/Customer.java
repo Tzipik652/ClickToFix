@@ -35,7 +35,7 @@ public class Customer {
     @Column(unique = true)
     private String email;
 
-    @Column(unique = true)
+    @Column
     private String phone;
 
     @Column

@@ -2,7 +2,6 @@ package com.technicians.clicktofix.service.Request;
 
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -17,9 +16,6 @@ import com.technicians.clicktofix.model.Customer;
 import com.technicians.clicktofix.model.Request;
 import com.technicians.clicktofix.model.Technician;
 
-import jakarta.annotation.PostConstruct;
-import org.modelmapper.PropertyMap;
-import org.modelmapper.TypeMap;
 
 @Service
 public class RequestServiceImpl implements RequestService{
@@ -32,22 +28,6 @@ public class RequestServiceImpl implements RequestService{
     private CustomerRepository customerRep;
     @Autowired
     private ModelMapper mapper;
-// @PostConstruct
-// public void initMapper() {
-//     mapper.getConfiguration().setAmbiguityIgnored(true); // 🔴 חובה
-
-//     TypeMap<Request, RequestDto> typeMap = mapper.createTypeMap(Request.class, RequestDto.class);
-
-//     typeMap.addMappings(mapper -> {
-//         mapper.map(Request::getCustomerId, RequestDto::setCustomerId);
-//         mapper.map(Request::getTechnicianId, RequestDto::setTechnicianId);
-//         mapper.map(src -> src.getCustomer() != null ? src.getCustomer().getName() : null,
-//                    RequestDto::setCustomerName);
-//         mapper.map(src -> src.getTechnician() != null ? src.getTechnician().getName() : null,
-//                    RequestDto::setTechnicianName);
-//     });
-    
-// }
 
 
     @Override

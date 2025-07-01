@@ -1,7 +1,6 @@
 package com.technicians.clicktofix.model;
 
 import java.time.LocalDateTime;
-import java.util.Locale.Category;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

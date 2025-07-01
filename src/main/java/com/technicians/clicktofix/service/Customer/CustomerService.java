@@ -12,4 +12,6 @@ public interface CustomerService {
     List<Customer> getAll();
     Customer getById(int customer_id);
     boolean existsById(int id);
+    boolean existsByEmail(String email);
+    Customer findByEmail(String email);
 }

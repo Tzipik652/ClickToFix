@@ -53,5 +53,18 @@ public class CustomerServiceImpl implements CustomerService {
        return customerRep.existsById(id);
     }
 
+    @Override
+    public boolean existsByEmail(String email) {
+        return customerRep.existsByEmail(email);
+    }
+
+    @Override
+    public Customer findByEmail(String email) {
+        try{
+            return customerRep.findByEmail(email).get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
     
 } 

@@ -11,5 +11,7 @@ public interface TechnicianService {
     List<Technician> getAll();
     Technician getById(int technician_id);
     boolean existsById(int id);
+    boolean existsByEmail(String email);
+    Technician findByEmail(String email);
     
 }
