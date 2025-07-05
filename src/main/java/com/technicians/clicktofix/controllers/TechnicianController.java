@@ -32,7 +32,6 @@ public class TechnicianController {
     @Autowired
     private RequestService rs;
 
-    // @PostMapping
     public ResponseEntity<?> addTechnician(@RequestBody Technician technician) {
         try {
             ts.add(technician);
@@ -56,20 +55,32 @@ public class TechnicianController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> loginTechnician(@RequestBody LoginRequest loginRequest) {
+   
+   @PostMapping("/login")
+    public ResponseEntity<?> loginCustomer(@RequestBody LoginRequest loginRequest) {
         try {
-            Technician technician = ts.findByEmail(loginRequest.getEmail());
-            if (technician == null || !technician.getPasswordHash().equals(loginRequest.getPassword())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+            Technician customer = ts.findByEmail(loginRequest.getEmail());
+
+            if (customer == null) {
+                return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Technician with email " + loginRequest.getEmail() + " not found");
             }
-            return ResponseEntity.ok(technician); // אפשר גם להחזיר טוקן JWT במקום פרטי לקוח
+
+            if (!customer.getPasswordHash().equals(loginRequest.getPassword())) {
+                return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Incorrect password");
+            }
+
+            return ResponseEntity.ok(customer); // אפשר להחזיר גם JWT כאן
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to login: " + e.getMessage());
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to login: " + e.getMessage());
         }
     }
-
     @PutMapping("/{id}")
     public ResponseEntity<?> updateTechnician(@PathVariable int id, @RequestBody Technician technician) {
         if (!ts.existsById(id)) {

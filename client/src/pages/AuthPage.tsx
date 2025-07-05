@@ -45,7 +45,16 @@ const AuthPage = () => {
         values.role === 'customer'
           ? `/api/customers${isRegister ? '/register' : '/login'}`
           : `/api/technicians${isRegister ? '/register' : '/login'}`;
-      const res = await axios.post(url, values);
+      const payload = {
+          ...values,
+          passwordHash: values.password,
+          location: {
+            latitude: Number(values.location.lat),
+            longitude: Number(values.location.lng),
+          },
+        };
+
+      const res = await axios.post(url, payload);
       alert('Success: ' + JSON.stringify(res.data));
         {!isRegister && navigate("/home")}
     } catch (error: any) {
@@ -63,6 +72,7 @@ const AuthPage = () => {
         </Typography>
 
         <Formik
+          enableReinitialize
           initialValues={{
             name: '',
             email: '',
@@ -78,6 +88,8 @@ const AuthPage = () => {
         >
           {({ isSubmitting, errors, touched, handleChange, values }) => (
             <Form>
+                    <pre>{JSON.stringify(errors, null, 2)}</pre> {/* הדפסת שגיאות */}
+
               <Box mt={2}>
                 {isRegister && (
                   <TextField

@@ -33,16 +33,6 @@ public class CustomerController {
     @Autowired
     private RequestService rs;
 
-    // @PostMapping
-    // public ResponseEntity<?> addCustomer(@RequestBody Customer customer) {
-    //     try {
-    //         cs.add(customer);
-    //         return ResponseEntity.status(HttpStatus.CREATED).body("Customer created successfully");
-    //     } catch (Exception e) {
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-    //                 .body("Failed to create customer: " + e.getMessage());
-    //     }
-    // }
     @PostMapping("/register")
     public ResponseEntity<?> registerCustomer(@RequestBody Customer customer) {
         try {
@@ -57,19 +47,32 @@ public class CustomerController {
         }
     }
 
-    @PostMapping("/login")
+   @PostMapping("/login")
     public ResponseEntity<?> loginCustomer(@RequestBody LoginRequest loginRequest) {
         try {
             Customer customer = cs.findByEmail(loginRequest.getEmail());
-            if (customer == null || !customer.getPasswordHash().equals(loginRequest.getPassword())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+
+            if (customer == null) {
+                return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Customer with email " + loginRequest.getEmail() + " not found");
             }
-            return ResponseEntity.ok(customer); // אפשר גם להחזיר טוקן JWT במקום פרטי לקוח
+
+            if (!customer.getPasswordHash().equals(loginRequest.getPassword())) {
+                return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Incorrect password");
+            }
+
+            return ResponseEntity.ok(customer); // אפשר להחזיר גם JWT כאן
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to login: " + e.getMessage());
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to login: " + e.getMessage());
         }
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCustomer(@PathVariable int id, @RequestBody Customer customer) {
