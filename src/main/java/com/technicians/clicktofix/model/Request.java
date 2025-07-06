@@ -19,10 +19,9 @@ import lombok.Data;
 @Table
 @Data
 public class Request  {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column
     private String description;
@@ -33,24 +32,24 @@ public class Request  {
     @Column
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime assignedAt;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime estimatedArrival;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private Status status= Status.PENDING;
 
     @Column(name = "customer_id", insertable = true,updatable = true)
-    private int customerId;
+    private Integer customerId;
 
     @ManyToOne
     @JoinColumn(name = "customer_id",insertable = false,updatable = false)
     private Customer customerRef;
 
     @Column(name = "technician_id", insertable = true,updatable = true)
-    private int technicianId;
+    private Integer technicianId;
 
     @ManyToOne
     @JoinColumn(name = "technician_id",insertable = false,updatable = false)

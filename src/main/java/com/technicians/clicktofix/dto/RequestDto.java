@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class RequestDto {
 
-    private int id;
+    private Integer id;
 
     private String description;
 
@@ -23,10 +23,10 @@ public class RequestDto {
 
     private Status status;
 
-    private int customerId;
+    private Integer customerId;
     private String customerName;
 
-    private int technicianId;
+    private Integer technicianId;
     private String technicianName;
 
 }

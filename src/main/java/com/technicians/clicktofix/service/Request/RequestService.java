@@ -5,8 +5,9 @@ import java.util.List;
 import com.technicians.clicktofix.dto.RequestDto;
 
 public interface RequestService {
-    void add(RequestDto sr);
+    RequestDto add(RequestDto sr);
     void update(RequestDto sr);
+    void patchRequest(Integer id, RequestDto patchDto);
     void delete(int service_request_id);
     List<RequestDto> getAll();
     RequestDto getById(int service_request_id);

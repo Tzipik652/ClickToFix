@@ -3,6 +3,7 @@ package com.technicians.clicktofix.service.Request;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import com.technicians.clicktofix.dal.TechnicianRepository;
 import com.technicians.clicktofix.dto.RequestDto;
 import com.technicians.clicktofix.model.Customer;
 import com.technicians.clicktofix.model.Request;
+import com.technicians.clicktofix.model.Status;
 import com.technicians.clicktofix.model.Technician;
 
 
@@ -31,19 +33,32 @@ public class RequestServiceImpl implements RequestService{
 
 
     @Override
-    public void add(RequestDto r) {
-        if(serviceRequestRep.existsById(r.getId()))
-            throw new RuntimeException("Request already exist!");
-        serviceRequestRep.save(mapper.map(r,Request.class));
+    public RequestDto add(RequestDto r) {
+        Request entity = mapper.map(r, Request.class);
+        if (entity.getStatus() == null) {
+            entity.setStatus(Status.PENDING);
+        }
+        return mapper.map(serviceRequestRep.save(entity),RequestDto.class);
     }
 
+    
     @Override
     public void update(RequestDto r) {
-        if(!serviceRequestRep.existsById(r.getId()))
+        if(r.getId() == null || !serviceRequestRep.existsById(r.getId()))
             throw new RuntimeException("Request does not exist!");
         serviceRequestRep.save(mapper.map(r,Request.class));
     }
+    @Override
+    public void patchRequest(Integer id, RequestDto patchDto) {
+        Request entity = serviceRequestRep.findById(id)
+            .orElseThrow(() -> new RuntimeException("Request not found"));
 
+        mapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
+
+        mapper.map(patchDto, entity);
+
+        serviceRequestRep.save(entity);
+    }
     @Override
     public void delete(int request_id) {
         if(!serviceRequestRep.existsById(request_id))

@@ -57,23 +57,23 @@ public class TechnicianController {
 
    
    @PostMapping("/login")
-    public ResponseEntity<?> loginCustomer(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> loginTechnician(@RequestBody LoginRequest loginRequest) {
         try {
-            Technician customer = ts.findByEmail(loginRequest.getEmail());
+            Technician technician = ts.findByEmail(loginRequest.getEmail());
 
-            if (customer == null) {
+            if (technician == null) {
                 return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body("Technician with email " + loginRequest.getEmail() + " not found");
             }
 
-            if (!customer.getPasswordHash().equals(loginRequest.getPassword())) {
+            if (!technician.getPasswordHash().equals(loginRequest.getPassword())) {
                 return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body("Incorrect password");
             }
 
-            return ResponseEntity.ok(customer); // אפשר להחזיר גם JWT כאן
+            return ResponseEntity.ok(technician); // אפשר להחזיר גם JWT כאן
 
         } catch (Exception e) {
             return ResponseEntity

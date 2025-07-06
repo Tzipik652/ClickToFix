@@ -5,6 +5,8 @@ import { Suspense } from 'react';
 import { Box, CircularProgress } from '@mui/material';
 import PrivateRoute from './components/PrivateRoute/PrivateRoute';
 import Home from './pages/Home';
+import RequestForm from './components/RequestForm/RequestForm';
+import TechnicianDashboard from './pages/TechnicianDashboard';
 
 
 function App() {
@@ -27,6 +29,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>}>
+          <Route path="/request-from" element={<PrivateRoute><RequestForm /></PrivateRoute>}/>
+          <Route path="/technician-dashboard" element={<PrivateRoute><TechnicianDashboard /></PrivateRoute>}/>
 
         </Route>
       </Routes>
