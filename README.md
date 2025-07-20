@@ -1,6 +1,6 @@
-# 📦 Technician Service System – Spring Boot Project
+# Technician Service System – Spring Boot Project
 
-## 📋 Project Overview
+## Project Overview
 
 This project is a Spring Boot-based web application for managing service requests between **technicians** and **customers**.  
 It includes functionality for:
@@ -12,14 +12,14 @@ It includes functionality for:
 
 ---
 
-## 👥 User Roles
+## User Roles
 
-### 🧑‍💼 Customer
+### Customer
 
 - Can sign in and submit a detailed service request.
 - Upon submission, a confirmation message is displayed, indicating the request was successfully received and is being processed.
 
-### 🔧 Technician
+### Technician
 
 - Can log in to view all **unassigned service requests**.
 - Can choose to **claim** a request.
