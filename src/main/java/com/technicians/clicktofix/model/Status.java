@@ -4,5 +4,5 @@ public enum Status {
     PENDING,
     ASSIGNED,
     COMPLETED,
-    CANCELLED 
+    CANCELLED
 }

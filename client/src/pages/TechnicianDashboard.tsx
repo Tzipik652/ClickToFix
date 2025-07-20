@@ -35,7 +35,11 @@ const TechnicianDashboard = () => {
 
   const handleStatusChange = async (requestId: number, newStatus: Status) => {
     try {
-      await axios.patch(`/api/requests/${requestId}`, { status: newStatus });
+      await axios.patch(`/api/requests/${requestId}`, 
+        { 
+          status: newStatus,
+          technicianId: technicianId
+        });
       setRequests(prev =>
         prev.map(req => req.id === requestId ? { ...req, status: newStatus } : req)
       );

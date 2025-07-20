@@ -53,7 +53,7 @@ const RequestForm = () => {
       };
 
       await axios.post("/api/requests", payload);
-      setSuccessMessage("הבקשה נשלחה בהצלחה!");
+      setSuccessMessage("הבקשה נשלחה בהצלחה ותטופל בהקדם. עדכון על הבקשה יתקבל במייל עימו נרשמת למערכת");
       resetForm();
     } catch (error: any) {
       const message = error.response?.data || error.message || "אירעה שגיאה";

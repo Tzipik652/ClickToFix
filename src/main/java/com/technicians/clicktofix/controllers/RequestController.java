@@ -1,16 +1,21 @@
 package com.technicians.clicktofix.controllers;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.technicians.clicktofix.dto.RequestDto;
+import com.technicians.clicktofix.model.Status;
 import com.technicians.clicktofix.service.Request.RequestService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,7 +44,7 @@ public class RequestController {
         }
     }
 
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<?> updateRequest(@PathVariable int id, @RequestBody RequestDto Request) {
         if (!rs.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Request not found");
@@ -53,6 +58,16 @@ public class RequestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to update request: " + e.getMessage());
         }
+    }
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> updateStatus(@PathVariable int id, @RequestBody RequestDto requestDto) {
+        RequestDto existing = rs.getById(id);
+        if (existing == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Request not found");
+        }               
+
+        rs.updateStatus(id, requestDto.getStatus(),requestDto.getTechnicianId());
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")

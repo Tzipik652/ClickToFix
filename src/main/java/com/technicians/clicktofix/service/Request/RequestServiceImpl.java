@@ -1,6 +1,7 @@
 package com.technicians.clicktofix.service.Request;
 
 import java.lang.reflect.Type;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.modelmapper.Conditions;
@@ -17,6 +18,7 @@ import com.technicians.clicktofix.model.Customer;
 import com.technicians.clicktofix.model.Request;
 import com.technicians.clicktofix.model.Status;
 import com.technicians.clicktofix.model.Technician;
+import com.technicians.clicktofix.service.EmailService.EmailService;
 
 
 @Service
@@ -30,7 +32,8 @@ public class RequestServiceImpl implements RequestService{
     private CustomerRepository customerRep;
     @Autowired
     private ModelMapper mapper;
-
+    @Autowired
+    private EmailService emailService;
 
     @Override
     public RequestDto add(RequestDto r) {
@@ -44,21 +47,68 @@ public class RequestServiceImpl implements RequestService{
     
     @Override
     public void update(RequestDto r) {
+        Request request = serviceRequestRep.findById(r.getId())
+            .orElseThrow(() -> new RuntimeException("Request not found"));
         if(r.getId() == null || !serviceRequestRep.existsById(r.getId()))
             throw new RuntimeException("Request does not exist!");
         serviceRequestRep.save(mapper.map(r,Request.class));
     }
     @Override
-    public void patchRequest(Integer id, RequestDto patchDto) {
-        Request entity = serviceRequestRep.findById(id)
+    public void updateStatus(int id, Status newStatus, int technicianId) {
+        Request request = serviceRequestRep.findById(id)
             .orElseThrow(() -> new RuntimeException("Request not found"));
 
-        mapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
+        request.setStatus(newStatus);
+        request.setTechnicianId(technicianId);
+        if (newStatus == Status.ASSIGNED) {
+            request.setAssignedAt(LocalDateTime.now());
+            request.setEstimatedArrival(LocalDateTime.now().plusHours(2)); // למשל זמן הגעה משוער עוד שעתיים
+        } 
+        serviceRequestRep.save(request);
+if (request.getCustomerId() == null || request.getTechnicianId() == null) {
+    System.err.println("❌ חסר מזהה לקוח או טכנאי - לא ניתן להמשיך");
+    return;
+}
 
-        mapper.map(patchDto, entity);
+        if (newStatus == Status.ASSIGNED) {
+            Customer customer = customerRep.findById(request.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Customer not found with ID: " + request.getCustomerId()));
 
-        serviceRequestRep.save(entity);
+            Technician tech = technicianRep.findById(request.getTechnicianId())
+                .orElseThrow(() -> new RuntimeException("Technician not found with ID: " + request.getTechnicianId()));
+
+            System.out.println("=== עדכון סטטוס לבקשה ID: " + id + " ===");
+System.out.println("סטטוס חדש: " + newStatus);
+System.out.println("CustomerId: " + request.getCustomerId());
+System.out.println("TechnicianId: " + request.getTechnicianId());
+System.out.println("EstimatedArrival: " + request.getEstimatedArrival());
+if (request.getCustomerId() == null || request.getTechnicianId() == null) {
+    System.err.println("חסר מזהוי של לקוח או טכנאי. לא ניתן לשלוח מייל.");
+    return; // או החזירי ResponseEntity עם שגיאה מתאימה
+}
+
+            String subject = "הבקשה שלך נקלטה ע\"י טכנאי";
+            String body = String.format("""
+                    שלום %s,
+
+                    הבקשה שלך טופלה ונקלטה ע\"י טכנאי.
+
+                    פרטי הטכנאי:
+                    שם: %s
+                    טלפון: %s
+
+                    זמן הגעה משוער: %s
+
+                    תודה על פנייתך,
+                    צוות ClickToFix
+                    """, customer.getName(), tech.getName(), tech.getPhone(), request.getEstimatedArrival() != null ? request.getEstimatedArrival() : "לא ידוע");
+
+            emailService.sendEmail(customer.getEmail(), subject, body);
+        }
+         
     }
+
+
     @Override
     public void delete(int request_id) {
         if(!serviceRequestRep.existsById(request_id))
