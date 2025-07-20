@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Container, Paper, Typography, Box,
   TextField, Button, MenuItem
@@ -12,7 +12,24 @@ const roles = ['customer', 'technician'];
 const expertiseOptions = ['חשמל', 'אינסטלציה', 'מזגנים', 'מחשבים'];
 
 const RegisterPage = () => {
+  const [initialLocation, setInitialLocation] = useState({ lat: '', lng: '' });
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      setInitialLocation({
+        lat: latitude.toString(),
+        lng: longitude.toString()
+      });
+    },
+    (error) => {
+      console.warn("Location access denied or failed", error);
+    }
+  );
+  }, []);
 
   const registerSchema = Yup.object({
     name: Yup.string().required('Name is required'),
@@ -67,6 +84,7 @@ const RegisterPage = () => {
         <Typography variant="h5" textAlign="center">הרשמה</Typography>
 
         <Formik
+          enableReinitialize
           initialValues={{
             name: '',
             email: '',
@@ -74,7 +92,7 @@ const RegisterPage = () => {
             phone: '',
             role: 'customer',
             address: '',
-            location: { lat: '', lng: '' },
+            location: initialLocation,
             expertise: [],
           }}
           validationSchema={registerSchema}
@@ -131,23 +149,6 @@ const RegisterPage = () => {
                     margin="normal"
                   />
                 )}
-
-                <TextField
-                  fullWidth name="location.lat" label="קו רוחב (Latitude)"
-                  value={values.location.lat}
-                  onChange={(e) => setFieldValue('location.lat', e.target.value)}
-                  error={touched.location?.lat && Boolean(errors.location?.lat)}
-                  helperText={touched.location?.lat && errors.location?.lat}
-                  margin="normal"
-                />
-                <TextField
-                  fullWidth name="location.lng" label="קו אורך (Longitude)"
-                  value={values.location.lng}
-                  onChange={(e) => setFieldValue('location.lng', e.target.value)}
-                  error={touched.location?.lng && Boolean(errors.location?.lng)}
-                  helperText={touched.location?.lng && errors.location?.lng}
-                  margin="normal"
-                />
 
                 {values.role === 'technician' && (
                   <TextField
