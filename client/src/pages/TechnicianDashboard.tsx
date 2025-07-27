@@ -24,7 +24,12 @@ const TechnicianDashboard = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
   const [estimatedTime, setEstimatedTime] = useState<string>('');
-
+  const statusMap: Record<string, string> = {
+    PENDING : 'קריאה חדשה',
+    ASSIGNED : 'הקריאה נתפסה ע"י טכנאי',
+    COMPLETED : 'הושלם',
+    CANCELLED : 'בוטל'
+  };
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -118,9 +123,9 @@ const TechnicianDashboard = () => {
             sx={{ minWidth: 150 }}
           >
             <MenuItem value="ALL">הכל</MenuItem>
-            <MenuItem value="PENDING">פתוח</MenuItem>
-            <MenuItem value="ASSIGNED">בטיפול</MenuItem>
-            <MenuItem value="COMPLETED">טופל</MenuItem>
+            <MenuItem value="PENDING">{statusMap["PENDING"]}</MenuItem>
+            <MenuItem value="ASSIGNED">{statusMap["ASSIGNED"]}</MenuItem>
+            <MenuItem value="COMPLETED">{statusMap["COMPLETED"]}</MenuItem>
           </TextField>
 
           <TextField
@@ -147,9 +152,15 @@ const TechnicianDashboard = () => {
               <ListItem key={req.id} divider>
                 <ListItemText
                     primary={`#${req.id} - ${req.description}`}
-                    secondary={`כתובת: ${req.address} | סטטוס: ${req.status} 
-                    | תאריך: ${req.createdAt ? new Date(req.createdAt).toLocaleDateString() : "ללא תאריך"} | זמן הגעה: ${req.estimatedArrival ?? "לא הוזן"}
-                    }`}
+                    secondary={`כתובת: ${req.address} | סטטוס: ${statusMap[req.status] ?? req.status}
+                    | תאריך פתיחת קריאה: ${req.createdAt ? new Date(req.createdAt).toLocaleDateString() : "ללא תאריך"} 
+                    | זמן הגעה משוער: ${req.estimatedArrival 
+                      ? new Date(req.estimatedArrival).toLocaleString("he-IL", {
+                          dateStyle: "short",
+                          timeStyle: "short"
+                        }) 
+                      : "לא הוזן"}
+                    `}
                 />
                 <Button
                   variant="contained"
@@ -175,13 +186,15 @@ const TechnicianDashboard = () => {
         <DialogTitle>הזן זמן הגעה משוער</DialogTitle>
         <DialogContent>
           <TextField
-            label="זמן הגעה"
-            type="time"
+            label="זמן הגעה משוער"
+            type="datetime-local"
             fullWidth
             value={estimatedTime}
             onChange={(e) => setEstimatedTime(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ step: 300 }} // 5 דקות
+            slotProps={{
+              input: {}, 
+              inputLabel: { shrink: true }  
+            }}           
             sx={{ mt: 1 }}
           />
         </DialogContent>
