@@ -22,7 +22,6 @@ const LoginPage = () => {
     const loginSchema = Yup.object({
         email: Yup.string().email('Invalid email').required('Required'),
         password: Yup.string().required('Required'),
-        phone: Yup.string().required('Required'),
         role: Yup.string().oneOf(roles).required('Required'),
     });
 
@@ -99,13 +98,6 @@ const LoginPage = () => {
                     value={values.password} onChange={handleChange}
                     error={touched.password && Boolean(errors.password)}
                     helperText={touched.password && errors.password}
-                    margin="normal"
-                />
-                <TextField
-                    fullWidth name="phone" label="Phone"
-                    value={values.phone} onChange={handleChange}
-                    error={touched.phone && Boolean(errors.phone)}
-                    helperText={touched.phone && errors.phone}
                     margin="normal"
                 />
                 <TextField

@@ -4,6 +4,13 @@ import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.technicians.clicktofix.dto.CustomerDto;
+import com.technicians.clicktofix.dto.TechnicianDto;
+import com.technicians.clicktofix.model.Customer;
+import com.technicians.clicktofix.model.Technician;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -20,6 +27,17 @@ public class ClicktofixApplication {
 	
 	@Bean
 	public ModelMapper getMapper(){
-		return new ModelMapper();
+		ModelMapper mapper = new ModelMapper();
+
+		mapper.typeMap(CustomerDto.class, Customer.class)
+			.addMapping(CustomerDto::getPassword, Customer::setPasswordHash);
+		mapper.typeMap(TechnicianDto.class, Technician.class)
+			.addMapping(TechnicianDto::getPassword, Technician::setPasswordHash);
+		return mapper;
 	}
+
+	@Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

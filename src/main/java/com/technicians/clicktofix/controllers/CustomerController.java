@@ -2,11 +2,15 @@ package com.technicians.clicktofix.controllers;
 
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.technicians.clicktofix.dto.CustomerDto;
 import com.technicians.clicktofix.dto.LoginRequest;
 import com.technicians.clicktofix.dto.RequestDto;
 import com.technicians.clicktofix.model.Customer;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +29,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 
 
-
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
@@ -32,13 +37,16 @@ public class CustomerController {
     private CustomerService cs;
     @Autowired
     private RequestService rs;
+    @Autowired
+    private ModelMapper mapper;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerCustomer(@RequestBody Customer customer) {
+    public ResponseEntity<?> registerCustomer(@RequestBody CustomerDto customer) {
         try {
             if (cs.existsByEmail(customer.getEmail())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already in use");
             }
+            System.out.println("Registering customer: " + customer.getPassword());
             cs.add(customer);
             return ResponseEntity.status(HttpStatus.CREATED).body("Customer registered successfully");
         } catch (Exception e) {
@@ -51,20 +59,24 @@ public class CustomerController {
     public ResponseEntity<?> loginCustomer(@RequestBody LoginRequest loginRequest) {
         try {
             Customer customer = cs.findByEmail(loginRequest.getEmail());
-
+            
             if (customer == null) {
                 return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body("Customer with email " + loginRequest.getEmail() + " not found");
             }
 
-            if (!customer.getPasswordHash().equals(loginRequest.getPassword())) {
+           
+            PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+            if (!passwordEncoder.matches(loginRequest.getPassword(), customer.getPasswordHash())) {
                 return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body("Incorrect password");
             }
 
-            return ResponseEntity.ok(customer); // אפשר להחזיר גם JWT כאן
+            CustomerDto customerDto = mapper.map(customer, CustomerDto.class);
+            return ResponseEntity.ok(customerDto);
 
         } catch (Exception e) {
             return ResponseEntity
@@ -108,7 +120,7 @@ public class CustomerController {
     @GetMapping
     public ResponseEntity<?> getAllCustomers() {
         try {
-            List<Customer> list = cs.getAll();
+            List<CustomerDto> list = cs.getAll();
             return ResponseEntity.ok(list);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -118,19 +130,19 @@ public class CustomerController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getCustomerById(@PathVariable int id) {
-        Customer tech = cs.getById(id);
-        if (tech == null) {
+        CustomerDto customer = cs.getById(id);
+        if (customer == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
         }
-        return ResponseEntity.ok(tech);
+        return ResponseEntity.ok(customer);
     }
     @GetMapping("{id}/requests")
     public ResponseEntity<?> getRequestsByCustomerId(@PathVariable int id) {
-        List<RequestDto> tech = rs.getRequestsByCustomerId(id);
-        if (tech.isEmpty()) {
+        List<RequestDto> r = rs.getRequestsByCustomerId(id);
+        if (r.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Request not found");
         }
-        return ResponseEntity.ok(tech);
+        return ResponseEntity.ok(r);
     }
     @GetMapping("{id}/requests/descriptions")
     public ResponseEntity<?> getAllDescriptionRequestsByCustomerID(@PathVariable int id) {

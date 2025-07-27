@@ -1,30 +1,41 @@
 package com.technicians.clicktofix.service.Customer;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.technicians.clicktofix.dal.CustomerRepository;
+import com.technicians.clicktofix.dto.CustomerDto;
 import com.technicians.clicktofix.model.Customer;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
     @Autowired
     private CustomerRepository customerRep;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private ModelMapper mapper;
 
     @Override
-    public void add(Customer t) {
-        if(customerRep.existsById(t.getId()))
+    public void add(CustomerDto c) {
+        if(customerRep.existsById(c.getId()))
             throw new RuntimeException("customer already exist!");
-        customerRep.save(t);
+        String hashedPassword = passwordEncoder.encode(c.getPassword());
+        c.setPassword(hashedPassword);        
+        customerRep.save(mapper.map(c, Customer.class));
     }
 
     @Override
-    public void update(Customer t) {
-        if(!customerRep.existsById(t.getId()))
+    public void update(Customer c) {
+        if(!customerRep.existsById(c.getId()))
             throw new RuntimeException("customer does not exist!");
-        customerRep.save(t);
+        customerRep.save(c);
     }
 
      @Override
@@ -35,14 +46,15 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public List<Customer> getAll() {
-        return (List<Customer>)customerRep.findAll();
+    public List<CustomerDto> getAll() {
+        Type listType = new TypeToken<List<CustomerDto>>(){}.getType();
+        return mapper.map((List<Customer>)customerRep.findAll(), listType);
     }
 
     @Override
-    public Customer getById(int customer_id) {
+    public CustomerDto getById(int customer_id) {
         try{
-            return customerRep.findById(customer_id).get();
+            return mapper.map(customerRep.findById(customer_id).get(), CustomerDto.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

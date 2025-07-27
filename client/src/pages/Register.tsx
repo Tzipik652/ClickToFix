@@ -98,7 +98,7 @@ const RegisterPage = () => {
           validationSchema={registerSchema}
           onSubmit={handleRegister}
         >
-          {({ isSubmitting, errors, touched, handleChange, values, setFieldValue }) => (
+          {({ isSubmitting, errors, touched, handleChange, values }) => (
             <Form>
               <Box mt={2}>
                 <TextField
@@ -121,6 +121,7 @@ const RegisterPage = () => {
                   error={touched.password && Boolean(errors.password)}
                   helperText={touched.password && errors.password}
                   margin="normal"
+                  autoComplete="new-password"
                 />
                 <TextField
                   fullWidth name="phone" label="Phone"

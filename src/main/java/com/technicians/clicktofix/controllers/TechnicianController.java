@@ -2,13 +2,17 @@ package com.technicians.clicktofix.controllers;
 
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.technicians.clicktofix.dto.LoginRequest;
 import com.technicians.clicktofix.dto.RequestDto;
+import com.technicians.clicktofix.dto.TechnicianDto;
 import com.technicians.clicktofix.model.Technician;
 import com.technicians.clicktofix.service.Request.RequestService;
 import com.technicians.clicktofix.service.Technician.TechnicianService;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 
 
-
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/technicians")
 public class TechnicianController {
@@ -31,8 +36,10 @@ public class TechnicianController {
     private TechnicianService ts;
     @Autowired
     private RequestService rs;
+    @Autowired
+    private ModelMapper mapper;
 
-    public ResponseEntity<?> addTechnician(@RequestBody Technician technician) {
+    public ResponseEntity<?> addTechnician(@RequestBody TechnicianDto technician) {
         try {
             ts.add(technician);
             return ResponseEntity.status(HttpStatus.CREATED).body("Technician created successfully");
@@ -42,11 +49,12 @@ public class TechnicianController {
         }
     }
     @PostMapping("/register")
-    public ResponseEntity<?> registerTechnician(@RequestBody Technician technician) {
+    public ResponseEntity<?> registerTechnician(@RequestBody TechnicianDto technician) {
         try {
             if (ts.existsByEmail(technician.getEmail())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already in use");
             }
+
             ts.add(technician);
             return ResponseEntity.status(HttpStatus.CREATED).body("Technician registered successfully");
         } catch (Exception e) {
@@ -67,13 +75,15 @@ public class TechnicianController {
                     .body("Technician with email " + loginRequest.getEmail() + " not found");
             }
 
-            if (!technician.getPasswordHash().equals(loginRequest.getPassword())) {
+            PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+            if (!passwordEncoder.matches(loginRequest.getPassword(), technician.getPasswordHash())) {
                 return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body("Incorrect password");
             }
-
-            return ResponseEntity.ok(technician); // אפשר להחזיר גם JWT כאן
+            TechnicianDto technicianDto = mapper.map(technician, TechnicianDto.class);
+            return ResponseEntity.ok(technicianDto);
 
         } catch (Exception e) {
             return ResponseEntity
@@ -82,7 +92,7 @@ public class TechnicianController {
         }
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateTechnician(@PathVariable int id, @RequestBody Technician technician) {
+    public ResponseEntity<?> updateTechnician(@PathVariable int id, @RequestBody TechnicianDto technician) {
         if (!ts.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Technician not found");
         }
@@ -115,7 +125,7 @@ public class TechnicianController {
     @GetMapping
     public ResponseEntity<?> getAllTechnicians() {
         try {
-            List<Technician> list = ts.getAll();
+            List<TechnicianDto> list = ts.getAll();
             return ResponseEntity.ok(list);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -125,7 +135,7 @@ public class TechnicianController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getTechnicianById(@PathVariable int id) {
-        Technician tech = ts.getById(id);
+        TechnicianDto tech = ts.getById(id);
         if (tech == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Technician not found");
         }
