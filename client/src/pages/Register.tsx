@@ -96,7 +96,7 @@ const RegisterPage = () => {
           sx={{ animation: 'fadeIn 0.3s ease-in-out' }}
           >
             <Box display="flex" alignItems="center" gap={1}>
-              <Typography>{":אם אתה מעוניין להירשם כטכנאי למערכת צור קשר במייל clicktofix.service@gmail.com"}</Typography>
+              <Typography>{"אם אתה מעוניין להירשם כטכנאי במערכת צור קשר במייל clicktofix.service@gmail.com"}</Typography>
               <ErrorOutlineIcon />
             </Box>                               
         </Box>

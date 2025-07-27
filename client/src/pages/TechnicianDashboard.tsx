@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
   Container, Typography, Paper, List, ListItem, ListItemText, Button, CircularProgress,
-  Box, TextField, MenuItem
+  Box, TextField, MenuItem,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle
 } from '@mui/material';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -17,6 +21,10 @@ const TechnicianDashboard = () => {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
+  const [estimatedTime, setEstimatedTime] = useState<string>('');
+
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -33,42 +41,67 @@ const TechnicianDashboard = () => {
     fetchRequests();
   }, [technicianId]);
 
-  const handleStatusChange = async (requestId: number, newStatus: Status) => {
+  const handleConfirmEstimatedTime = async () => {
+    if (!selectedRequestId) return;
     try {
-      await axios.patch(`/api/requests/${requestId}`, 
-        { 
-          status: newStatus,
-          technicianId: technicianId
-        });
+      await axios.patch(`/api/requests/${selectedRequestId}`, {
+        status: Status.ASSIGNED,
+        technicianId: technicianId,
+        estimatedArrival: estimatedTime,
+      });
+
       setRequests(prev =>
-        prev.map(req => req.id === requestId ? { ...req, status: newStatus } : req)
+        prev.map(req =>
+          req.id === selectedRequestId
+            ? { ...req, status: Status.ASSIGNED, estimatedArrival: estimatedTime }
+            : req
+        )
       );
+      setOpenDialog(false);
+      setSelectedRequestId(null);
     } catch (err) {
-      alert('שגיאה בעדכון הסטטוס');
+      alert('שגיאה בשמירת זמן הגעה');
     }
   };
 
- const filteredRequests = requests.filter((req) => {
-  const matchesStatus = statusFilter === 'ALL' || req.status === statusFilter;
+  const openEstimatedTimeDialog = (requestId: number) => {
+    setSelectedRequestId(requestId);
+    setEstimatedTime('');
+    setOpenDialog(true);
+  };
 
-  if (!req.createdAt) return false; // מונע Invalid Date
+  const filteredRequests = requests.filter((req) => {
+    const matchesStatus = statusFilter === 'ALL' || req.status === statusFilter;
 
-  const parsedDate = new Date(req.createdAt);
-  if (isNaN(parsedDate.getTime())) return false; // תאריך לא תקין
+    if (!req.createdAt) return false; 
 
-  const requestDate = parsedDate.toISOString().split('T')[0];
+    const parsedDate = new Date(req.createdAt);
+    if (isNaN(parsedDate.getTime())) return false; 
 
-  const matchesDateFrom = !dateFrom || requestDate >= dateFrom;
-  const matchesDateTo = !dateTo || requestDate <= dateTo;
+    const requestDate = parsedDate.toISOString().split('T')[0];
 
-  return matchesStatus && matchesDateFrom && matchesDateTo;
-});
+    const matchesDateFrom = !dateFrom || requestDate >= dateFrom;
+    const matchesDateTo = !dateTo || requestDate <= dateTo;
+
+    return matchesStatus && matchesDateFrom && matchesDateTo;
+  });
 
 
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
 
+  const handleStatusComplate = (id: number) => {
+    axios.patch(`/api/requests/${id}`, { status: Status.COMPLETED })
+      .then(() => {
+        setRequests(prev => prev.map(req => req.id === id ? { ...req, status: Status.COMPLETED } : req));
+      })
+      .catch(err => {
+        alert('שגיאה בסימון הקריאה כטופלה');
+      });
+  }
+
   return (
+    
     <Container maxWidth="md">
       <Typography variant="h5" mt={4} mb={2} align="center">
         שלום {technicianName} 📋
@@ -88,7 +121,6 @@ const TechnicianDashboard = () => {
             <MenuItem value="PENDING">פתוח</MenuItem>
             <MenuItem value="ASSIGNED">בטיפול</MenuItem>
             <MenuItem value="COMPLETED">טופל</MenuItem>
-            <MenuItem value="CANCELLED">בוטלו</MenuItem>
           </TextField>
 
           <TextField
@@ -115,14 +147,14 @@ const TechnicianDashboard = () => {
               <ListItem key={req.id} divider>
                 <ListItemText
                     primary={`#${req.id} - ${req.description}`}
-                    secondary={`כתובת: ${req.address} | סטטוס: ${req.status} | תאריך: ${
-                    req.createdAt ? new Date(req.createdAt).toLocaleDateString() : "ללא תאריך"
+                    secondary={`כתובת: ${req.address} | סטטוס: ${req.status} 
+                    | תאריך: ${req.createdAt ? new Date(req.createdAt).toLocaleDateString() : "ללא תאריך"} | זמן הגעה: ${req.estimatedArrival ?? "לא הוזן"}
                     }`}
                 />
                 <Button
                   variant="contained"
                   size="small"
-                  onClick={() => handleStatusChange(req.id, Status.ASSIGNED)}
+                  onClick={() => openEstimatedTimeDialog(req.id)}
                   sx={{ mr: 1 }}
                 >
                   התחל טיפול
@@ -130,7 +162,7 @@ const TechnicianDashboard = () => {
                 <Button
                   variant="outlined"
                   size="small"
-                  onClick={() => handleStatusChange(req.id, Status.COMPLETED)}
+                  onClick={() => handleStatusComplate(req.id)}
                 >
                   סמן כטופל
                 </Button>
@@ -139,6 +171,28 @@ const TechnicianDashboard = () => {
           </List>
         )}
       </Paper>
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>הזן זמן הגעה משוער</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="זמן הגעה"
+            type="time"
+            fullWidth
+            value={estimatedTime}
+            onChange={(e) => setEstimatedTime(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            inputProps={{ step: 300 }} // 5 דקות
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>ביטול</Button>
+          <Button variant="contained" onClick={handleConfirmEstimatedTime} disabled={!estimatedTime}>
+            אישור
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </Container>
   );
 };
